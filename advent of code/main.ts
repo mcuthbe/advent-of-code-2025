@@ -5,41 +5,21 @@ const filePath = "./input.txt";
 
 let inputString = (await Deno.readTextFile(filePath)) as string;
 
-const [optionsString, designsString] = inputString.split(`
+console.log(inputString);
 
-`);
-const options = optionsString.split(", ");
-const designs = designsString.split("\n");
-let recursivelyBuildDesign = (
-  target: string,
-  current: string = "",
-  sum = 0
-): number => {
-  if (current === target) {
-    return sum + 1;
-  } else if (current.length > target.length || !target.startsWith(current)) {
-    return 0;
-  }
-  const sums = options.map((option) => {
-    const newCurrent = current + option;
-    if (newCurrent.length > target.length || !target.startsWith(newCurrent)) {
-      return undefined;
-    }
-    return recursivelyBuildDesign(target, current + option, sum);
-  });
-  return sums
-    .filter((sum) => sum !== undefined)
-    .reduce((acc, curr) => acc + curr, 0);
-};
-
-recursivelyBuildDesign = memoise(recursivelyBuildDesign);
-
-let sums = 0;
-designs.forEach((design, index) => {
-  console.log(index);
-
-  const sum = recursivelyBuildDesign(design);
-  sums += sum;
-});
-
-console.log(sums);
+const moves = inputString.split(`\r\n`);
+console.log(moves);
+let position = 50;
+let count = 0;
+for (const [index, move] of moves.entries()) {
+  console.log(move);
+  const direction = move[0];
+  const distance =
+    (move.match(/\d+/) ? parseInt(move.match(/\d+/)![0]) : 0) % 100;
+  position = direction === "R" ? position + distance : position - distance;
+  if (position < 0) position += 100;
+  if (position >= 100) position -= 100;
+  console.log(position);
+  if (position === 0) count++;
+}
+console.log(count);
