@@ -7,19 +7,16 @@ let inputString = (await Deno.readTextFile(filePath)) as string;
 
 console.log(inputString);
 
-const moves = inputString.split(`\r\n`);
+const moves = inputString.replace(/\r\n/g, "").split(`,`);
 console.log(moves);
-let position = 50;
 let count = 0;
 for (const [index, move] of moves.entries()) {
-  const direction = move[0];
-  let distance = move.match(/\d+/) ? parseInt(move.match(/\d+/)![0]) : 0;
-  while (distance > 0) {
-    position = direction === "R" ? position + 1 : position - 1;
-    if (position < 0) position += 100;
-    if (position > 99) position -= 100;
-    if (position === 0) count++;
-    distance--;
+  const [first, second] = move.split("-");
+  for (let i = +first; i <= +second; i++) {
+    const text = `${i}`;
+    if (text.slice(0, text.length / 2) === text.slice(text.length / 2)) {
+      count += i;
+    }
   }
 }
 console.log(count);
