@@ -14,8 +14,23 @@ for (const [index, move] of moves.entries()) {
   const [first, second] = move.split("-");
   for (let i = +first; i <= +second; i++) {
     const text = `${i}`;
-    if (text.slice(0, text.length / 2) === text.slice(text.length / 2)) {
-      count += i;
+    // console.log(text);
+    for (let j = 0; j <= text.length - 1; j++) {
+      // console.log(`j: ${j}`);
+      let subString = "";
+      for (let k = 0; k < j; k++) {
+        // console.log(`k: ${k}`);
+        subString += text[k];
+      }
+      // console.log(subString);
+      const repetitions = text.length / j;
+      if (repetitions % 1 === 0) {
+        if (text === subString.repeat(repetitions)) {
+          console.log(`Found: ${text}, ${subString}`);
+          count += i;
+          break;
+        }
+      }
     }
   }
 }
