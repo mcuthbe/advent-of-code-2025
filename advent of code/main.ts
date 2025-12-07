@@ -11,22 +11,23 @@ type Entry = { operation: "+" | "*"; values: number[] };
 
 let count = 0;
 
-type Coord = `${number},${number}`;
+type Coord = { x: number; y: number };
+type Dupes = { coord: Coord; count: number };
 
 type Map = Record<number, Record<number, string>>;
 
 let map: Map = {};
-let startPos: Coord = `0,0`;
+let startPos: Coord = { x: 0, y: 0 };
 let checked: Record<`${number},${number}`, number> = {};
 
-let locations: Set<Coord> = new Set();
+let locations: Dupes[] = [];
 
 inputString.split("\r\n").forEach((line, lineIndex) => {
   line.split("").forEach((char, charIndex) => {
     map[lineIndex] ??= {};
     if (char === "S") {
-      startPos = `${charIndex},${lineIndex}`;
-      locations.add(startPos);
+      startPos = { x: charIndex, y: lineIndex };
+      locations.push({ coord: startPos, count: 1 });
     }
     map[lineIndex][charIndex] = char;
   });
@@ -34,28 +35,48 @@ inputString.split("\r\n").forEach((line, lineIndex) => {
 // console.log(map);
 // console.log(locations);
 // console.log(map[Array.from(locations)[0].y][Array.from(locations)[0].x]);
-while (
-  locations.size > 0 &&
-  Array.from(locations).every(
-    (location) =>
-      map[Number(location.split(",")[1])][Number(location.split(",")[0])]
-  )
-) {
-  let newLocations: Set<Coord> = new Set();
+let done = false;
+while (locations.length > 0 && !done) {
+  let newLocations: Dupes[] = [];
+  let deduped: Dupes[] = [];
   for (const location of locations) {
-    const newY = Number(location.split(",")[1]) + 1;
-    const x = Number(location.split(",")[0]);
-    if (map[newY]?.[x] === ".") {
-      newLocations.add(`${x},${newY}`);
-    }
-    if (map[newY]?.[x] === "^") {
-      newLocations.add(`${x + 1},${newY}`);
-      newLocations.add(`${x - 1},${newY}`);
-      count++;
+    const existing = deduped.find(
+      (loc) =>
+        loc.coord.x === location.coord.x && loc.coord.y === location.coord.y
+    );
+    if (existing) {
+      existing.count += location.count;
+    } else {
+      deduped.push(location);
     }
   }
+  console.log(deduped);
+  for (const location of deduped) {
+    const newY = location.coord.y + 1;
+    if (map[newY]?.[location.coord.x] === ".") {
+      newLocations.push({
+        coord: { x: location.coord.x, y: newY },
+        count: location.count,
+      });
+    }
+    if (map[newY]?.[location.coord.x] === "^") {
+      newLocations.push({
+        coord: { x: location.coord.x + 1, y: newY },
+        count: location.count,
+      });
+      newLocations.push({
+        coord: { x: location.coord.x - 1, y: newY },
+        count: location.count,
+      });
+    }
+  }
+  if (!locations.every((location) => map[location.coord.y][location.coord.x])) {
+    done = true;
+  } else {
+    count = locations.reduce((acc, loc) => acc + loc.count, 0);
+  }
   locations = newLocations;
-  console.log(locations);
+  // console.log(locations);
 }
 
 console.log(count);
