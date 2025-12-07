@@ -8,34 +8,54 @@ let inputString = (await Deno.readTextFile(filePath)) as string;
 const moves = inputString.split(`\r\n`);
 
 type Entry = { operation: "+" | "*"; values: number[] };
-const dict: Record<number, Entry> = {};
 
-for (const move of moves) {
-  const strings = move.split(" ").filter((x) => x.length > 0);
-  console.log(strings);
-  for (const [index, str] of strings.entries()) {
-    dict[index] = dict[index] || { operation: "+", values: [] };
-    if (str === "+" || str === "*") {
-      dict[index].operation = str;
-    }
-
-    const num = Number(str);
-    if (isNaN(num)) continue;
-    dict[index].values.push(num);
-  }
-}
 let count = 0;
-for (const entry of Object.values(dict)) {
-  let total = entry.values[0];
-  for (const val of entry.values.slice(1)) {
-    if (entry.operation === "+") {
-      total += val;
-    } else {
-      total *= val;
+
+type Coord = `${number},${number}`;
+
+type Map = Record<number, Record<number, string>>;
+
+let map: Map = {};
+let startPos: Coord = `0,0`;
+let checked: Record<`${number},${number}`, number> = {};
+
+let locations: Set<Coord> = new Set();
+
+inputString.split("\r\n").forEach((line, lineIndex) => {
+  line.split("").forEach((char, charIndex) => {
+    map[lineIndex] ??= {};
+    if (char === "S") {
+      startPos = `${charIndex},${lineIndex}`;
+      locations.add(startPos);
+    }
+    map[lineIndex][charIndex] = char;
+  });
+});
+// console.log(map);
+// console.log(locations);
+// console.log(map[Array.from(locations)[0].y][Array.from(locations)[0].x]);
+while (
+  locations.size > 0 &&
+  Array.from(locations).every(
+    (location) =>
+      map[Number(location.split(",")[1])][Number(location.split(",")[0])]
+  )
+) {
+  let newLocations: Set<Coord> = new Set();
+  for (const location of locations) {
+    const newY = Number(location.split(",")[1]) + 1;
+    const x = Number(location.split(",")[0]);
+    if (map[newY]?.[x] === ".") {
+      newLocations.add(`${x},${newY}`);
+    }
+    if (map[newY]?.[x] === "^") {
+      newLocations.add(`${x + 1},${newY}`);
+      newLocations.add(`${x - 1},${newY}`);
+      count++;
     }
   }
-  console.log(JSON.stringify(entry));
-  console.log(total);
-  count += total;
+  locations = newLocations;
+  console.log(locations);
 }
+
 console.log(count);
