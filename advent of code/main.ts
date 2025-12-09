@@ -37,23 +37,15 @@ for (let i = 0; i < lines.length; i++) {
   }
 }
 
-let circuits: Position[][] = [];
+let finalCount = 1;
 
+let circuits: Position[][] = [];
+let finished = false;
 connections
   .toSorted((a, b) => a.distance - b.distance)
-  .filter((_, index) => index < 1000)
   .forEach(({ first, second }) => {
     let done = false;
-    if (first.x === 19137 || second.x === 19137) {
-      console.log("starting", first, second);
-      console.log(
-        circuits.filter((circuit) =>
-          circuit.find(
-            (pos) => pointsEquals(pos, first!) || pointsEquals(pos, second!)
-          )
-        )
-      );
-    }
+    if (finished) return;
 
     if (
       circuits.filter((circuit) =>
@@ -69,14 +61,6 @@ connections
         (circuit) => !!circuit.find((pos) => pointsEquals(pos, second!))
       );
       if (firstCircuitIndex === -1 || secondCircuitIndex === -1) {
-        console.log(
-          "Circuits",
-          circuits.filter((circuit) =>
-            circuit.find(
-              (pos) => pointsEquals(pos, first!) || pointsEquals(pos, second!)
-            )
-          )
-        );
         return;
       }
       if (
@@ -97,12 +81,6 @@ connections
         }
         circuits.push(Array.from(newCircuit));
         done = true;
-        if (first.x === 19137 || second.x === 19137) {
-          console.log("Merging circuits");
-        }
-        // if (Array.from(newCircuit).some((pos) => pos.x === 19137)) {
-        //   console.log("Merged from elsewhere", first, second);
-        // }
       }
     }
     if (done) return;
@@ -111,50 +89,29 @@ connections
       const has2 = circuit.find((pos) => pointsEquals(pos, second!));
       if (has1 && has2) {
         done = true;
-        if (first.x === 19137 || second.x === 19137) {
-          console.log("Has1 && has2");
-        }
+
         return;
       }
       if (has1) {
         done = true;
-        if (first.x === 19137 || second.x === 19137) {
-          console.log("Has1");
-        }
+
         circuit.push(second!);
         return;
       }
       if (has2) {
-        if (first.x === 19137 || second.x === 19137) {
-          console.log("Has2");
-        }
         done = true;
         circuit.push(first!);
         return;
       }
     });
     if (!done) {
-      if (first.x === 19137 || second.x === 19137) {
-        console.log("New circuit");
-      }
       circuits.push([first!, second!]);
     }
-    if (first.x === 19137 || second.x === 19137) {
-      console.log("Connected", first, second);
-      console.log(
-        circuits.filter((circuit) =>
-          circuit.find(
-            (pos) => pointsEquals(pos, first!) || pointsEquals(pos, second!)
-          )
-        )
-      );
+
+    if (circuits.length === 1 && circuits[0].length === lines.length) {
+      finished = true;
+      finalCount = first.x * second.x;
     }
   });
 
-let finalCount = 1;
-circuits = circuits.toSorted((a, b) => b.length - a.length);
-for (let i = 0; i < 3; i++) {
-  console.log(circuits[i].length);
-  finalCount *= circuits[i].length;
-}
 console.log(finalCount);
